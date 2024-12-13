@@ -12,7 +12,6 @@ const Role = () => {
 
   const handleCaptainPress = () => {
     router.navigate('./captain/auth')
-    
   }
 
   return (
