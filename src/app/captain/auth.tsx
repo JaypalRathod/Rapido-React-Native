@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, ScrollView, Image, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, ScrollView, Image, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { authStyles } from '@/styles/authStyles'
 import { commonStyles } from '@/styles/commonStyles'
@@ -6,14 +6,20 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import CustomText from '@/components/shared/CustomText';
 import PhoneInput from '@/components/shared/PhoneInput';
 import CustomButton from '@/components/shared/CustomButton';
-import { resetAndNavigate } from '@/utils/Helpers';
+import { signin } from '@/service/authService';
+import { useWS } from '@/service/WSProvider';
 
 const Auth = () => {
 
+    const { updateAccessToken } = useWS();
     const [phone, setPhone] = useState('');
 
     const handleNext = async () => {
-        resetAndNavigate('/caption/home')
+        if (!phone && phone.length !== 10) {
+            Alert.alert("Please enter a phone number")
+            return;
+        }
+        signin({ role: 'captain', phone }, updateAccessToken)
     }
 
     return (
@@ -29,7 +35,7 @@ const Auth = () => {
                 </View>
 
                 <CustomText fontFamily='Medium' variant='h6'>
-                   Good to see you, caption!
+                    Good to see you, caption!
                 </CustomText>
 
                 <CustomText fontFamily='Regular' variant='h7' style={commonStyles.lightText}>

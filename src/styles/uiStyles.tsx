@@ -90,6 +90,7 @@ export const uiStyles = StyleSheet.create({
     cubes: {
         flexDirection: 'row',
         marginVertical: 20,
+        height:100,
         alignItems: 'baseline',
         justifyContent: 'space-between',
     },

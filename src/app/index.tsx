@@ -1,10 +1,18 @@
-import { View, Image } from 'react-native'
+import { View, Image, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { commonStyles } from '@/styles/commonStyles'
 import { splashStyles } from '@/styles/splashStyles'
 import CustomText from '@/components/shared/CustomText'
 import { useFonts } from 'expo-font';
 import { resetAndNavigate } from '@/utils/Helpers'
+import { jwtDecode } from "jwt-decode";
+import { refresh_tokens } from '@/service/apiInterceptor'
+import { useUserStore } from '@/store/userStore'
+import { tokenStorage } from '@/store/Storage'
+
+interface DecodedToken {
+  exp: number;
+}
 
 const Main = () => {
 
@@ -16,9 +24,44 @@ const Main = () => {
     SemiBold: require('../assets/fonts/NotoSans-SemiBold.ttf'),
   });
 
+  const { user } = useUserStore();
+
   const [hasNavigated, setHasNavigated] = useState(false);
 
   const tokenCheck = async () => {
+
+    const access_token = tokenStorage.getString('access_token') as string;
+    const refresh_token = tokenStorage.getString('refresh_token') as string;
+
+    if (access_token) {
+      const decodedAccessToken = jwtDecode<DecodedToken>(access_token);
+      const decodedRefreshToken = jwtDecode<DecodedToken>(refresh_token);
+
+      const currentTime = Date.now() / 1000;
+
+      if (decodedRefreshToken?.exp < currentTime) {
+        resetAndNavigate('/role')
+        Alert.alert('Session Expired, Please login again.');
+      }
+
+      if (decodedAccessToken?.exp < currentTime) {
+        try {
+          refresh_tokens();
+        } catch (error) {
+          console.log(error)
+          Alert.alert('Refresh token error')
+        }
+      }
+
+      if (user) {
+        resetAndNavigate('/customer/home')
+      } else {
+        resetAndNavigate('/captain/home')
+      }
+
+      return
+    }
+
     resetAndNavigate('/role')
   }
 
